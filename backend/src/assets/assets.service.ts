@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable,NotFoundException } from '@nestjs/common';
 import { CreateAssetDto } from './dto/create-asset.dto.js';
 import { UpdateAssetDto } from './dto/update-asset.dto.js';
 
@@ -20,7 +20,7 @@ export class AssetsService {
   ]
   create(createAssetDto: CreateAssetDto) {
     const newAsset = {
-      id: this.assets.length,
+      id: this.assets.length + 1,
       name: createAssetDto.name,
       type: createAssetDto.type,
       value: createAssetDto.value
@@ -34,14 +34,23 @@ export class AssetsService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} asset`;
-  }
+  return this.assets.find(asset => asset.id === id);
+}
 
   update(id: number, updateAssetDto: UpdateAssetDto) {
-    return `This action updates a #${id} asset`;
+    const asset = this.assets.find(asset => asset.id === id);
+    if(!asset){
+      throw new NotFoundException('Asset not found');
+    }
+    Object.assign(asset, updateAssetDto);
+    return asset;
   }
 
   remove(id: number) {
-    return `This action removes a #${id} asset`;
+    const index = this.assets.findIndex( asset => asset.id === id);
+    if(index  === -1){
+      throw new NotFoundException('invalid index');
+    }
+    this.assets.splice(index, 1);
   }
 }
